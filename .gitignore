@@ -12,4 +12,5 @@
 /testclasses
 # Eclipse settings directory
 /.settings
-
+# Maven build directory
+/target
