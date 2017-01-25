@@ -51,17 +51,33 @@ import soot.options.Options;
  * a classfile, or jimple or baf output files. */
 public class SourceLocator
 {
-    public SourceLocator( Singletons.Global g ) {}
+    public SourceLocator( Singletons.Global g ) {
+        bytecodeLoader = null;
+    }
     public static SourceLocator v() { return G.v().soot_SourceLocator(); }
 
     protected Set<ClassLoader> additionalClassLoaders = new HashSet<ClassLoader>();
 	protected Set<String> classesToLoad;
 	
 	private enum ClassSourceType { jar, zip, apk, dex, directory, unknown };
+
+    protected BytecodeLoader bytecodeLoader;
+
+    public void setBytecodeLoader(BytecodeLoader loader) {
+        this.bytecodeLoader = loader;
+    }
     
     /** Given a class name, uses the soot-class-path to return a ClassSource for the given class. */
 	public ClassSource getClassSource(String className) 
     {
+        if (bytecodeLoader != null) {
+            byte[] bytecode = bytecodeLoader.getBytecode(className);
+            if (bytecode != null) {
+                InputStream is = new ByteArrayInputStream(bytecode);
+                return new AsmClassSource(className, is);
+            }
+        }
+
 		if(classesToLoad==null) {
 			classesToLoad = new HashSet<String>();
 			classesToLoad.addAll(Scene.v().getBasicClasses());
