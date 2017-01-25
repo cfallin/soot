@@ -598,10 +598,15 @@ public abstract class AbstractASMBackend {
 	 * Emits the bytecode for a reference to an outer class if necessary
 	 */
 	protected void generateOuterClassReference() {
-		SootClass outerClass = sc.getOuterClass();
-		String outerClassName = slashify(outerClass.getName());
+		String outerClassName = null;
 		String enclosingMethod = null;
 		String enclosingMethodSig = null;
+
+        if (sc.hasOuterClass()) {
+            SootClass outerClass = sc.getOuterClass();
+            outerClassName = slashify(outerClass.getName());
+        }
+
 		if (sc.hasTag("EnclosingMethodTag")) {
 			EnclosingMethodTag emTag = (EnclosingMethodTag) sc
 					.getTag("EnclosingMethodTag");
@@ -611,10 +616,12 @@ public abstract class AbstractASMBackend {
 			enclosingMethod = emTag.getEnclosingMethod();
 			enclosingMethodSig = emTag.getEnclosingMethodSig();
 		}
+
 		if (!sc.hasOuterClass() && sc.hasTag("OuterClassTag")) {
 			outerClassName = slashify(((OuterClassTag) sc
 					.getTag("OuterClassTag")).getName());
 		}
+
 		cv.visitOuterClass(outerClassName, enclosingMethod, enclosingMethodSig);
 	}
 
