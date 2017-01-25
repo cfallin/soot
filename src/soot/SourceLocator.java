@@ -44,6 +44,7 @@ import com.google.common.cache.LoadingCache;
 
 import soot.JavaClassProvider.JarException;
 import soot.asm.AsmClassProvider;
+import soot.asm.AsmClassSource;
 import soot.options.Options;
 
 /** Provides utility methods to retrieve an input stream for a class name, given
@@ -93,7 +94,7 @@ public class SourceLocator
 				        String fileName = className.replace('.', '/') + ".class";
 						InputStream stream = cl.getResourceAsStream(fileName);
 						if(stream==null) return null;
-						return new CoffiClassSource(className, stream, fileName);
+                        return new AsmClassSource(className, stream);
 					}
 
             	}.find(className);
@@ -110,7 +111,7 @@ public class SourceLocator
 	        	return null;
         	InputStream stream = cl.getResourceAsStream(fileName);
         	if(stream!=null) {
-				return new CoffiClassSource(className, stream, fileName);
+				return new AsmClassSource(className, stream);
         	}
         }
         return null;

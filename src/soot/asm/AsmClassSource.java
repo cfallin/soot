@@ -33,27 +33,44 @@ import soot.javaToJimple.IInitialResolver.Dependencies;
  * 
  * @author Aaloan Miftah
  */
-class AsmClassSource extends ClassSource {
+public class AsmClassSource extends ClassSource {
 
 	private FoundFile foundFile;
+    private InputStream stream;
 	
 	/**
 	 * Constructs a new ASM class source.
 	 * @param cls fully qualified name of the class.
-	 * @param data stream containing data for class.
+	 * @param foundFile containing data for class.
 	 */
 	AsmClassSource(String cls, FoundFile foundFile) {
 		super(cls);
 		if(foundFile == null)
 			throw new IllegalStateException("Error: The FoundFile must not be null.");
 		this.foundFile = foundFile;
+        this.stream = null;
 	}
+
+    /**
+     * Constructs a new ASM class source given a byte input stream.
+     * @param cls fully qualified name of the class.
+     * @param stream a stream containing data for the class.
+     */
+    public AsmClassSource(String cls, InputStream stream) {
+        super(cls);
+        this.foundFile = null;
+        this.stream = stream;
+    }
 	
 	@Override
 	public Dependencies resolve(SootClass sc) {
 		InputStream d = null;
 		try {
-			d = foundFile.inputStream();
+            if (foundFile != null) {
+                d = foundFile.inputStream();
+            } else {
+                d = stream;
+            }
 			ClassReader clsr = new ClassReader(d);
 			SootClassBuilder scb = new SootClassBuilder(sc);
 			clsr.accept(scb, ClassReader.SKIP_FRAMES);
@@ -66,7 +83,7 @@ class AsmClassSource extends ClassSource {
 		}
 		finally {
 			try {
-				if(d != null){
+				if (d != null && d != stream) {
 					d.close();
 					d = null;
 				}
@@ -86,5 +103,12 @@ class AsmClassSource extends ClassSource {
 			foundFile.close();
 			foundFile = null;
 		}
+        if (stream != null) {
+            try {
+                stream.close();
+            } catch (IOException e) {
+            }
+            stream = null;
+        }
 	}
 }
