@@ -121,6 +121,10 @@ public class SourceLocator
     	additionalClassLoaders.add(c);
     }
 
+    public void clearAdditionalClassLoaders() {
+        additionalClassLoaders.clear();
+    }
+
     private void setupClassProviders() {
         classProviders = new LinkedList<ClassProvider>();
         ClassProvider classFileClassProvider = Options.v().coffi() ? new CoffiClassProvider() : new AsmClassProvider();
