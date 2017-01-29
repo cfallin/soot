@@ -298,8 +298,13 @@ public class FastColorer {
 						//		catch -> print(a)
 						// If an exception is thrown, at the second assignment, the
 						// assignment will not actually happen and "a" will be unchanged.
+						//
+						// FIX: cfallin 2017-01-29: this is causing verification errors. The JVM's
+						// bytecode verifier thinks that writes to a variable inside a trap-covered
+						// region *do* possibly flow into the handler. So conservatively count all
+						// exceptional edges.
 						Set<Local> liveLocalsAtUnit = new HashSet<Local>();
-						for (Unit succ : unitGraph.getUnexceptionalSuccsOf(unit)) {
+						for (Unit succ : unitGraph.getSuccsOf(unit)) {
 							List<Local> beforeSucc = liveLocals.getLiveLocalsBefore(succ);
 							liveLocalsAtUnit.addAll(beforeSucc);
 						}

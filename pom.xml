@@ -8,7 +8,7 @@
   <artifactId>soot</artifactId>
   
   <name>Soot</name>
-  <version>2017-01-24-cfallin</version>
+  <version>2017-01-29-cfallin</version>
   <description>A Java Optimization Framework</description>
   
   <properties>
