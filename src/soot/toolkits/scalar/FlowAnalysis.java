@@ -375,7 +375,54 @@ public abstract class FlowAnalysis<N, A> extends AbstractFlowAnalysis<N, A> {
 		BACKWARD {
 			@Override
 			<N> List<N> getEntries(DirectedGraph<N> g) {
-				return g.getTails();
+				List<N> tails = g.getTails();
+				
+				// Find unreachable nodes: e.g., one path that diverges
+				// into an infinite loop.
+				Set<N> reachable = new HashSet<N>();
+				Deque<N> workqueue = new ArrayDeque<N>();
+				for (N n : tails) {
+				    workqueue.addLast(n);
+				    reachable.add(n);
+				}
+				N node;
+				while (true) {
+				    node = workqueue.pollFirst();
+
+				    // cfallin 2017-07-20: fix for miscompile in functions with
+				    // infinite loop on one path and return on another: the infinite
+				    // loop is not analyzed because no "entry" in the backwards
+				    // liveness analysis is found anywhere in the loop. We need
+				    // a minimal set of nodes (e.g., one node in an SCC) so that
+				    // unreachable nodes become reachable.
+				    //
+				    // If we've run out of nodes on the workqueue, traverse all
+				    // nodes to look for a new unreachable one. Once we get a single
+				    // new node, continue the BFS and see how far we get. Only exit
+				    // if there are no new unreachable nodes in the graph.
+				    if (node == null) {
+					for (N n : g) {
+					    if (!reachable.contains(n)) {
+						node = n;
+						reachable.add(n);
+						tails.add(n);
+						break;
+					    }
+					}
+				    }
+				    if (node == null) {
+					break;
+				    }
+				    
+				    for (N pred : g.getPredsOf(node)) {
+					if (!reachable.contains(pred)) {
+					    workqueue.addLast(pred);
+					    reachable.add(pred);
+					}
+				    }
+				}
+
+				return tails;
 			}
 
 			@Override
